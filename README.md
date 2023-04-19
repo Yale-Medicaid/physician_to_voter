@@ -28,20 +28,20 @@ This repository is organized as follows:
 └── _targets.R
 ```
 
-The `code/` directory houses the functions used to complete the linkage and
+* The `code/` directory houses the functions used to complete the linkage and
 subsequent diagnostics.
 
-The `_targets.R` file contains the master script to run the entire analysis
+* The `_targets.R` file contains the master script to run the entire analysis
 pipeline using the [targets](https://books.ropensci.org/targets/) R package,
 which rebuilds downstream pieces of code if and only if uspstream code has
 changed. This saves time and means we can ensure reproducibility without
 re-running the pipeline after each change. The pipeline can be run by calling
 `targets::tar_make()` in R.
 
-The `figures/` directory holds the outputs produced by the pipeline. A seperate
+* The `figures/` directory holds the outputs produced by the pipeline. A seperate
 `tables/` folder will likely be created further along in the project.
 
-`linkage_slides.Rmd` and `pres.bib` are both used to generate the slides shared
+* `linkage_slides.Rmd` and `pres.bib` are both used to generate the slides shared
 with the team.
 
 ## Dependency Graph:
