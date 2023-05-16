@@ -1,7 +1,7 @@
 ---
 title: |
   Physician to Voter Linkage
-author : Beniamino Green
+author : Beniamino Green, Jacob Wallace
 date : 04/11/2023
 output:
     beamer_presentation:
@@ -16,46 +16,13 @@ bibliography: "pres.bib"
 library(arrow)
 library(stargazer)
 library(tidyverse)
+library(targets)
 library(zoomerjoin)
-
-example_matches <- read_csv("example_matches.csv") %>%
-    sample_n(15) %>%
-    mutate(
-           full_name.x = ifelse(nchar(full_name.x) < 21, full_name.x, paste0(substr(full_name.x,1,21),"...")),
-           full_name.y = ifelse(nchar(full_name.y) < 21, full_name.y, paste0(substr(full_name.y,1,21),"...")),
-           zip_dist = round(zip_dist),
-           CommercialData_Occupation = ifelse(nchar(CommercialData_Occupation) < 20, CommercialData_Occupation, paste0(substr(CommercialData_Occupation,1,20),"..."))
-           ) %>%
-        rename(
-               Occupation = CommercialData_Occupation,
-               L2_name = full_name.x,
-               NPPES_name = full_name.y,
-               ) %>%
-        select(-n)
-
-example_not_matches <- read_csv("example_not_matches.csv") %>%
-    sample_n(15) %>%
-    mutate(CommercialData_Occupation = replace_na(CommercialData_Occupation, "NA")) %>%
-    mutate(
-           full_name.x = ifelse(nchar(full_name.x) < 21, full_name.x, paste0(substr(full_name.x,1,21),"...")),
-           full_name.y = ifelse(nchar(full_name.y) < 21, full_name.y, paste0(substr(full_name.y,1,21),"...")),
-           zip_dist = round(zip_dist),
-           CommercialData_Occupation = ifelse(nchar(CommercialData_Occupation) < 20, CommercialData_Occupation, paste0(substr(CommercialData_Occupation,1,20),"..."))
-           ) %>%
-        rename(
-               Occupation = CommercialData_Occupation,
-               L2_name = full_name.x,
-               NPPES_name = full_name.y,
-               ) %>%
-        select(-n)
-
 upsize_theme <-
     theme_bw() +
     theme(axis.text=element_text(size=14),
         axis.title=element_text(size=16,face="bold"))
-
 ```
-
 
 
 # Summary
@@ -67,7 +34,7 @@ upsize_theme <-
 
 # High Level-Summary:
 
-![Linkage Pipeline At a Glance](at_a_glance.png)
+![Linkage Pipeline At a Glance](figures/targets_screenshot.PNG)
 
 # Secret Sauce: Locality Sensitive Hashing
 
@@ -138,38 +105,21 @@ df4  %>%
 
 # Post-LSH Processing
 
-![Post-LSH Processing](processing.png)
-
-# Processed Data - Example Matches:
-
-```{r, echo=F, results="asis"}
-example_matches %>%
-    stargazer(summary=F, header=F,
-              font.size="tiny",
-              title = "Example Matched Observations"
-    )
-```
-
-# Processed Data - Example Rejected Matches:
-
-```{r, echo=F, results="asis"}
-example_not_matches %>%
-    stargazer(summary=F, header=F,
-              font.size="tiny",
-              title = "Example Rejected Matches"
-    )
-
-```
+![Post-LSH Processing](figures/processing.png)
 
 # Processed Data - Distribution of Age Gap:
 
-![Distribution of Ages](ages.png)
+```{r, echo=F, fig.align="center"}
+knitr::include_graphics(tar_read(match_diagnostic_plots)[1])
+```
 
 * Correspond Closely to age at graduation statistics from @Staiger_2022, and shifted age at matriculation statistics from @aamc.
 
 # Match Breakdown by State:
 
-![Number of matches by state](match_by_state.png)
+```{r, echo=F, fig.align="center"}
+knitr::include_graphics(tar_read(match_diagnostic_plots)[2])
+```
 
 # Extra Stats:
 
@@ -185,13 +135,55 @@ example_not_matches %>%
 * ~ 1/3 will be not registered to vote (assuming doctors are as likely to register as general populaiton)
 * We expect there are 600K physicians registered to vote
 * We match 180K
-* Using a second LSH scheme which fuzzy matches first and last name with an exact match on middle initial gives us another 320K matches
+* Using a second LSH scheme which fuzzy matches first and last name with an exact match on middle initial gives us a total of 330K matches
 
 # Potential Extension: Bayesian Linkage Model
 
 * LSH-preprocessing step makes it feasible to run a Bayesian model (Felligi-Sunter / Naive Bayes) on a dataset of this size
 * Could be worth exporing as it would provide probability of each pair being a match.
 
+# Match Statistics: Bayesian Method:
+
+```{r, echo=F, results = "asis"}
+data <- tar_read(augment_lsh_data)
+data %>% select(
+  full_name_sim, 
+  mid_initial_agree, 
+  zip_dist, 
+  year_dist, 
+  medical, 
+  n,
+) %>%
+  as.data.frame() %>%
+  stargazer(
+    header=F,
+    summary.stat = c("min", "p25", "median", "p75", "max", "N"),
+    digits =2,
+    font.size="tiny"
+            )
+```
+
+# Match Statistics: Tree-Based Method:
+
+```{r, echo=F, results = "asis"}
+data <- tar_read(matches)
+data %>% dplyr::select(
+  full_name_sim, 
+  mid_initial_agree, 
+  zip_dist, 
+  year_dist, 
+  medical, 
+  n,
+  Voters_Gender,
+) %>%
+  as.data.frame() %>%
+  stargazer(
+    header=F,
+    summary.stat = c("min", "p25", "median", "p75", "max", "N"),
+    digits =2,
+    font.size="tiny"
+  )
+```
 
 # Next Steps:
 

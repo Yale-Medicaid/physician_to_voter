@@ -3,11 +3,13 @@ make_match_diagnostic_plots <- function(matches, physicians) {
 	
 	matches %>% 
 		ggplot(aes(x=year_dist)) + 
-		geom_histogram(bins=50) + 
+		geom_histogram() + 
 		xlab("Years Between Birth and Graducation From Med School") + 
 		ylab("Count") + 
-		ggtitle("Distribution of Age Gaps In Matched Data") 
-	ggsave(file =age_gap_plot_path)
+		xlim(c(15,45)) + 
+		ggtitle("Distribution of Age Gaps In Matched Data")  + 
+		theme(legend.position = "none")
+	ggsave(file =age_gap_plot_path, width=4.5, height=2.5)
 	
 	
 	phys_by_state <- physicians %>%
@@ -32,8 +34,9 @@ make_match_diagnostic_plots <- function(matches, physicians) {
 		coord_flip() + 
 		xlab("State") + 
 		xlab("N")  + 
-		ggtitle("Number of Matched Physicians by State")
-	ggsave(num_matched_path)
+		ggtitle("Number of Matched Physicians by State") + 
+		theme(legend.position = "none")
+	ggsave(num_matched_path, width=4.5, height=2.5)
 	
 	c(age_gap_plot_path, num_matched_path)
 }

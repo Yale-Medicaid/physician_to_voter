@@ -2,10 +2,9 @@
 # library(arrow)
 
 clean_physician_data <- function(cms_file, nppes_file, nucc_file) {
-	#cms_data <- read_csv("../data/DAC_NationalDownloadableFile.csv") %>%
 	cms_data <- read_csv(cms_file) %>%
 	  rename_with(tolower) %>%
-		select(npi, grd_yr) %>%
+		select(npi, grd_yr, med_sch) %>%
 		distinct()
 	
 	# nppes_data <- read_csv("../data/NPPES_Data_Dissemination_February_2023/npidata_pfile_20050523-20230212.csv") %>%

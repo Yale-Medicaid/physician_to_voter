@@ -24,6 +24,10 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 		Residence_Addresses_State = "c",
 		Residence_Addresses_Zip = "c",
 		Residence_Addresses_ZipPlus4 = "c",
+		CommercialData_Education = "c",
+		CommercialData_EstHomeValue = "c",
+		CommercialData_HomePurchasePrice = "c",
+		CommercialData_EstimatedHHIncome = "c",
 		Voters_Age = "n",
 		Voters_BirthDate = "c",
 		Voters_FirstName = "c",
@@ -68,15 +72,27 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 			medical_sub = ifelse(grepl("Medical", CommercialData_Occupation, ignore.case = T),CommercialData_Occupation, "None")
 		)
 	
+	print("Cleaning Data Finished")
+	print(Sys.time())
 	
-	join_out_1 <- lsh_inner_join(phys_data, voter_dataset, block_by = c("st"= "st_2"),
-														 n_gram_width=4, band_width = 12, n_bands = 300, threshold=.75, clean=T)
 	
-	join_out_2 <- lsh_inner_join(phys_data, voter_dataset, 
+	join_out_1 <- jaccard_inner_join(phys_data, voter_dataset, block_by = c("st"= "st_2"),
+														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T)
+	
+	print("Finished First Join")
+	print(Sys.time())
+	
+	join_out_2 <- jaccard_inner_join(phys_data, voter_dataset, 
 															 by = c("full_name_no_mid" = "full_name_no_mid_l2"), block_by = c("st_mi"= "st_mi_2"),
-														 n_gram_width=4, band_width = 12, n_bands = 300, threshold=.75, clean=T) %>%
+														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T) %>%
 		filter(nchar(Voters_MiddleName)<=1 | nchar(mid_nm) <= 1)
 		
+	
+	print("Finished Second Join")
+	print(Sys.time())
+	
+	rm(voter_dataset)
+	gc()
 	
 	join_out <- bind_rows(join_out_1, join_out_2) %>%
 		distinct()
