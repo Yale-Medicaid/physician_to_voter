@@ -134,18 +134,17 @@ knitr::include_graphics(tar_read(match_diagnostic_plots)[2])
 * ~ 10% should be non-citizens, and not eligible to vote
 * ~ 1/3 will be not registered to vote (assuming doctors are as likely to register as general populaiton)
 * We expect there are 600K physicians registered to vote
-* We match 180K
-* Using a second LSH scheme which fuzzy matches first and last name with an exact match on middle initial gives us a total of 330K matches
+* We match `r sum(tar_read(augment_lsh_data)$match_prob, na.rm=T)`
 
-# Potential Extension: Bayesian Linkage Model
+# Potential Extensions: Bayesian Linkage Model
 
 * LSH-preprocessing step makes it feasible to run a Bayesian model (Felligi-Sunter / Naive Bayes) on a dataset of this size
-* Could be worth exporing as it would provide probability of each pair being a match.
+* Could also hand-label a set of matches and use a Random Forest or other comparable method to extend to the entire dataset. 
 
-# Match Statistics: Bayesian Method:
+# Match Statistics: Random Forest Method:
 
 ```{r, echo=F, results = "asis"}
-data <- tar_read(augment_lsh_data)
+data <- tar_read(rf_match_data)
 data %>% select(
   full_name_sim, 
   mid_initial_agree, 
@@ -166,7 +165,7 @@ data %>% select(
 # Match Statistics: Tree-Based Method:
 
 ```{r, echo=F, results = "asis"}
-data <- tar_read(matches)
+data <- tar_read(dt_match_data)
 data %>% dplyr::select(
   full_name_sim, 
   mid_initial_agree, 

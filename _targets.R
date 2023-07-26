@@ -1,11 +1,12 @@
 library(targets)
 library(tarchetypes)
+
 source("code/01_extract_l2.R")
 source("code/03_clean_physician_data.R")
 source("code/04_locality_sensitive_hash.R")
 source("code/05_match_model.R")
 source("code/match_diagnostics.R")
-source("code/naive_bayes_match_model.R")
+source("code/random_forest_match_model.R")
 
 
 tar_option_set(packages = c("arrow",  "zoomerjoin", "lubridate", "zipcodeR", "tidyverse", 
@@ -33,18 +34,18 @@ list(
 		format = "parquet"
 	),
 	
-	tar_target(augment_lsh_data, add_nb_probabilities(lshed_data), format = "parquet"),
-		
-	tar_target(
-		matches, 
-		find_matches(lshed_data)
-	),
+	# Two Methods to take rough data and keep only true matches
+	tar_target(labelled_file,"data/hand_coded.Rda", format = "file" ), 
+	tar_target(rf_match_data, classify_match_nonmatch_rf(lshed_data, labelled_file), format = "parquet"),
+	tar_target(dt_match_data,  descision_tree_matcher (lshed_data)),
 	
+	# Create diagnostics for RF
 	tar_target(match_diagnostic_plots, 
-							make_match_diagnostic_plots(augment_lsh_data, physician_data), 
+							make_match_diagnostic_plots(rf_match_data, physician_data), 
 							format = "file"
 							), 
 	
+	# Make presentaiton for L2 Meeting
 	tar_render(match_slides, "linkage_slides.Rmd")
 	
 )

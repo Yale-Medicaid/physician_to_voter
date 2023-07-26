@@ -1,3 +1,4 @@
+
 locality_sensitive_hash <- function(physician_data, voter_files) {
 	yale_schema <- c(
 		CommercialData_Occupation = "c",
@@ -39,6 +40,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	
 	combined_schema <- c(LALVOTERID  = "c", yale_schema, datavant_schema)
 	
+	# Standardize Physician Data
 	phys_data <- physician_data %>%
 		mutate(
 			full_name = tolower(paste0(provider_first_name, provider_middle_name, `provider_last_name_(legal_name)`)),
@@ -53,8 +55,8 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 			last_nm = `provider_last_name_(legal_name)`
 			)
 	
-	# voter_files <- list.files("data/processed_voter_data/", full.names = T, recursive = T)
 	
+	# Collect relevant fields from voter files, format to be compatible with physician data
 	voter_dataset <- open_dataset(voter_files)  %>%
 		select(LALVOTERID, contains("Voters_"), 
 					 Residence_Addresses_Zip,Residence_Addresses_State, 
@@ -76,12 +78,14 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	print(Sys.time())
 	
 	
+	# Perform LSH on full name blocking on state 
 	join_out_1 <- jaccard_inner_join(phys_data, voter_dataset, block_by = c("st"= "st_2"),
 														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T)
 	
 	print("Finished First Join")
 	print(Sys.time())
 	
+	# Perform LSH on first + last name blocking on state and middle initial
 	join_out_2 <- jaccard_inner_join(phys_data, voter_dataset, 
 															 by = c("full_name_no_mid" = "full_name_no_mid_l2"), block_by = c("st_mi"= "st_mi_2"),
 														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T) %>%
@@ -91,14 +95,18 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	print("Finished Second Join")
 	print(Sys.time())
 	
+	# clear voter dataset because I am about to concat two large tables in memory
 	rm(voter_dataset)
 	gc()
+	
+	# append two datasets
 	
 	join_out <- bind_rows(join_out_1, join_out_2) %>%
 		distinct()
 	
 	print("Finished Joining")
 	
+	# standardize joined data
 	processed <- join_out %>%
 		mutate(
 			Voters_MiddleName = replace_na(Voters_MiddleName, ""),
@@ -108,6 +116,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 		group_by(npi) %>%
 		mutate(n = n()) 
 	
+	# create a second dataset of match diagnostic statistics, then bind onto joined data
 	comparison_dataset <- 
 		tibble(
 			full_name_sim = jaccard_similarity(processed$full_name.x, processed$full_name.y, 3), 

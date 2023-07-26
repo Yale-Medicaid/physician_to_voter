@@ -1,3 +1,6 @@
+# Save voter data as parquet files
+# On the TODO list is to have these saved in a hive format - we are almost there, so it 
+# makes sense to tweak when I have the time to rerun the codebase
 process_voter_data <- function(raw_l2_files) {
 	# Delete old files, to safeguard against using old data
 	unlink(

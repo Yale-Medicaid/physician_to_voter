@@ -1,4 +1,5 @@
-add_match_probabilities <- function(lshed_data, labelled_file) {
+# 
+classify_match_nonmatch_rf <- function(lshed_data, labelled_file) {
 	load(labelled_file)	
 	
 	agree_mat <- cbind(

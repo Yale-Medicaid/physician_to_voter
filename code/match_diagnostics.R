@@ -1,5 +1,5 @@
 make_match_diagnostic_plots <- function(matches, physicians) {
-	age_gap_plot_path <- "figures/age_dist_hist.png"
+	age_gap_plot_path <- "figures/age_dist_hist.pdf"
 	
 	matches %>% 
 		ggplot(aes(x=year_dist)) + 
@@ -22,7 +22,7 @@ make_match_diagnostic_plots <- function(matches, physicians) {
 		summarize(n=n())
 	
 	
-	num_matched_path <- "figures/matches_by_state.png"
+	num_matched_path <- "figures/matches_by_state.pdf"
 		
 	inner_join(phys_by_state, matches_by_state, by=c("provider_business_mailing_address_state_name" = "Residence_Addresses_State")) %>%
 		pivot_longer(cols = c(n.x, n.y))  %>%
