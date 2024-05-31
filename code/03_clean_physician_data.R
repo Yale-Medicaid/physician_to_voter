@@ -1,13 +1,15 @@
-# library(tidyverse)
-# library(arrow)
-
+# Merge and Clean Physician Data
+#'
+#' @param cms_file path to CMS csv file which provides year of med school graduation per NPI
+#' @param nppes_file contains physician data including first name, last name, zip code
+#' @param nucc_file path to NUCC crosswalk file which provides a crosswalk between taxonomy codes and human-readable descriptions
+#'
 clean_physician_data <- function(cms_file, nppes_file, nucc_file) {
 	cms_data <- read_csv(cms_file) %>%
 	  rename_with(tolower) %>%
 		select(npi, grd_yr, med_sch) %>%
 		distinct()
 	
-	# nppes_data <- read_csv("../data/NPPES_Data_Dissemination_February_2023/npidata_pfile_20050523-20230212.csv") %>%
 	nppes_data <- read_csv(nppes_file) %>%
 		rename_with(~tolower(gsub(" ", "_", .x)))
 	
@@ -22,7 +24,6 @@ clean_physician_data <- function(cms_file, nppes_file, nucc_file) {
 		drop_na(npi) %>%
 		filter(entity_type_code == 1)
 	
-	# nucc_data <- read_csv("../data/nucc_taxonomy_230.csv") %>% 
 	nucc_data <- read_csv(nucc_file) %>% 
 		rename_with(~tolower(gsub(" ", "_", .x)))
 	

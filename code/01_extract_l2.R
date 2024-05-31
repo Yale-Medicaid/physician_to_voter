@@ -1,14 +1,18 @@
+dollar_to_float <- function(x){
+	as.numeric(gsub("\\$", "", x))
+}
+
 # Save voter data as parquet files
 # On the TODO list is to have these saved in a hive format - we are almost there, so it 
 # makes sense to tweak when I have the time to rerun the codebase
 process_voter_data <- function(raw_l2_files) {
 	# Delete old files, to safeguard against using old data
-	unlink(
-		c(
-			list.dirs(path = "data/processed_voter_data/")
-		), 
-		recursive=T
-	)
+	# unlink(
+	# 	c(
+	# 		list.dirs(path = "data/processed_voter_data/")
+	# 	), 
+	# 	recursive=T
+	# )
 	
 	
 	output_folder_names <- gsub(".*Uniform--(.*).tab","data/processed_voter_data/\\1",raw_l2_files)

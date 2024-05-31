@@ -1,4 +1,12 @@
-
+#' Create a datframe of possible match pairs using locality sensitive hashing
+#' 
+#' @param physican_data dataframe of cleaned physican data, as returned by `clean_physician_data`
+#' @param voter_files a vector of cleaned voter files, as returned by `process_voter data`
+#' 
+#' @return a dataframe of 'rough matches' or possible matches. This should have
+#' very high recall as it's basically a blocking step; we should return all
+#' possible matching records, and expect a very high false-positive rate
+#' 
 locality_sensitive_hash <- function(physician_data, voter_files) {
 	yale_schema <- c(
 		CommercialData_Occupation = "c",
@@ -41,7 +49,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	combined_schema <- c(LALVOTERID  = "c", yale_schema, datavant_schema)
 	
 	# Standardize Physician Data
-	phys_data <- physician_data %>%
+	phys_data <- duckplyr::as_duckplyr_df(physician_data) %>%
 		mutate(
 			full_name = tolower(paste0(provider_first_name, provider_middle_name, `provider_last_name_(legal_name)`)),
 			full_name_no_mid = tolower(paste0(provider_first_name, `provider_last_name_(legal_name)`)),
@@ -80,7 +88,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	
 	# Perform LSH on full name blocking on state 
 	join_out_1 <- jaccard_inner_join(phys_data, voter_dataset, block_by = c("st"= "st_2"),
-														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T)
+														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T, progress=T)
 	
 	print("Finished First Join")
 	print(Sys.time())
@@ -88,7 +96,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 	# Perform LSH on first + last name blocking on state and middle initial
 	join_out_2 <- jaccard_inner_join(phys_data, voter_dataset, 
 															 by = c("full_name_no_mid" = "full_name_no_mid_l2"), block_by = c("st_mi"= "st_mi_2"),
-														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T) %>%
+														 n_gram_width=3, band_width = 7, n_bands = 400, threshold=.7, clean=T, progress=T) %>%
 		filter(nchar(Voters_MiddleName)<=1 | nchar(mid_nm) <= 1)
 		
 	
@@ -116,7 +124,7 @@ locality_sensitive_hash <- function(physician_data, voter_files) {
 		group_by(npi) %>%
 		mutate(n = n()) 
 	
-	# create a second dataset of match diagnostic statistics, then bind onto joined data
+	# create a second dataset of match statistics, then bind onto joined data
 	comparison_dataset <- 
 		tibble(
 			full_name_sim = jaccard_similarity(processed$full_name.x, processed$full_name.y, 3), 
