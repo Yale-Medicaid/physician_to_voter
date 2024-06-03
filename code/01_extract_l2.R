@@ -2,28 +2,35 @@ dollar_to_float <- function(x){
 	as.numeric(gsub("\\$", "", x))
 }
 
-# Save voter data as parquet files
-# On the TODO list is to have these saved in a hive format - we are almost there, so it 
-# makes sense to tweak when I have the time to rerun the codebase
+#' Save voter data as parquet files
+#'
+#' TODO: list is to have these saved in a hive format - we are almost there, so it
+#' makes sense to tweak when I have the time to rerun the codebase
+#' makes sense to tweak when I have the time to rerun the codebase
+#'
+#' @param raw_l2_files a character vector with the locations of all the raw l2 files
+#'
+#' @return a list of cleaned, standardized parquet files
+#'
 process_voter_data <- function(raw_l2_files) {
 	# Delete old files, to safeguard against using old data
 	# unlink(
 	# 	c(
 	# 		list.dirs(path = "data/processed_voter_data/")
-	# 	), 
+	# 	),
 	# 	recursive=T
 	# )
-	
-	
+
+
 	output_folder_names <- gsub(".*Uniform--(.*).tab","data/processed_voter_data/\\1",raw_l2_files)
 	walk(output_folder_names, dir.create, showWarnings=F, recursive=T)
-	
+
 	plan(multisession, workers=30)
-	
+
 	yale_schema <- c(
 		CommercialData_Education = "c",
 		CommercialData_Education = "c",
-		DateConfidence_Description = "c",	
+		DateConfidence_Description = "c",
 		CommercialData_EstHomeValue = "c",
 		CommercialData_HomePurchasePrice = "c",
 		CommercialData_EstimatedHHIncome = "c",
@@ -36,7 +43,7 @@ process_voter_data <- function(raw_l2_files) {
 		CommercialData_Occupation = "c",
 		CommercialData_OccupationGroup = "c",
 		CommercialData_OccupationIndustry = "c",
-		County = "c", 
+		County = "c",
 		EthnicGroups_EthnicGroup1Desc = "c",
 		Ethnic_Description = "c",
 		FECDonors_AvgDonation = "n",
@@ -49,16 +56,16 @@ process_voter_data <- function(raw_l2_files) {
 		Parties_Description = "c",
 		Residence_Addresses_CensusTract	= "c",
 		Residence_Families_HHCount = "c",
-		Residence_HHGender_Description = "c", 
+		Residence_HHGender_Description = "c",
 		Residence_HHParties_Description = "c",
 		Residence_HHParties_Description = "c",
 		Voters_Age = "n",
 		Voters_BirthDate = "c",
-		Voters_Gender = "c", 
+		Voters_Gender = "c",
 		Voters_CalculatedRegDate = "c",
 		Voters_OfficialRegDate = "c"
 	)
-	
+
 	datavant_schema <- c(
 		Residence_Addresses_AddressLine = "c",
 		Residence_Addresses_ApartmentNum = "c",
@@ -87,13 +94,13 @@ process_voter_data <- function(raw_l2_files) {
 		Voters_NameSuffix = "c",
 		VoterTelephones_CellPhoneFormatted = "c"
 	)
-	
+
 	combined_schema <- c(LALVOTERID  = "c", yale_schema, datavant_schema)
-	
+
 	transfer_to_parquets <- function(file_name, out_folder_name){
 		print(paste(Sys.time(), "Starting to write file", file_name))
-		save_callback <- function(x,pos) { 
-			
+		save_callback <- function(x,pos) {
+
 			x <- x %>%
 				mutate(
 					Voters_BirthDate = as.Date(Voters_BirthDate, format = "%m/%d/%Y"),
@@ -101,24 +108,24 @@ process_voter_data <- function(raw_l2_files) {
 					Voters_CalculatedRegDate = as.Date(Voters_BirthDate, format = "%m/%d/%Y")
 				) %>%
 				mutate_if(is_character, ~iconv(.x, "UTF-8", "UTF-8", sub = ""))
-			
-			x %>% 
+
+			x %>%
 				select(any_of(names(combined_schema))) %>%
 				write_parquet(paste0(out_folder_name,"/chunk_", pos,".parquet"))
 		}
-		
-		read_tsv_chunked(file_name, 
-										 SideEffectChunkCallback$new(save_callback), 
+
+		read_tsv_chunked(file_name,
+										 SideEffectChunkCallback$new(save_callback),
 										 col_types = combined_schema,
 										 chunk_size = 10^5
 		)
-		
+
 		print(paste(Sys.time(), "Done to writing file", file_name))
 	}
-	
+
 	future_map2(raw_l2_files, output_folder_names, transfer_to_parquets)
-	
-	return(list.files("data/processed_voter_data/", recursive = T, full.names=T))	
+
+	return(list.files("data/processed_voter_data/", recursive = T, full.names=T))
 }
 
 

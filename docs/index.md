@@ -51,8 +51,6 @@ live-updating, and so will not respond to changes in the architecture /
 pipeline, but it is useful to see a roughly-current summary of the analysis
 code now.
 
-![Code Dependency Graph](dependency_graph.png)
-
 ## Other Useful Links:
 
 Package site for [zoomerjoin](https://github.com/beniaminogreen/zoomerjoin),

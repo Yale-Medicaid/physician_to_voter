@@ -1,6 +1,7 @@
 library(tidyverse)
 
-# Take zip files from B drive
+# Take zip files from B drive. This won't work if you haven't been given access
+# by Yale, and you must mount the drive in the right place
 zip_files <- list.files("B:/ARCHIVE--SFTP--OLD VM2Uniform Format Files", pattern="*.zip", full.names = T)
 # Subset to include only 2018 files
 zip_files <- keep(zip_files, ~ grepl("2018",.x))
@@ -16,8 +17,8 @@ zip_files <- tibble(file_names = zip_files)  %>%
 # Check that we have 51 files corresponding to all states + DC
 stopifnot(length(zip_files) == 51)
 
-# Create output folders 
-folder_names <- gsub(".*Uniform--(.*).zip", "data/rawl2/\\1",zip_files) 
+# Create output folders
+folder_names <- gsub(".*Uniform--(.*).zip", "data/rawl2/\\1",zip_files)
 walk(folder_names, dir.create, showWarnings=T)
 
 # Unzip Files
