@@ -23,3 +23,28 @@ for (i in 504:n) {
 }
 
 write_parquet(df, "data/labelled_training_data/ben.parquet")
+
+dh_data <- read_parquet("data/labelled_training_data/dohyun.parquet")
+
+dh_data$match %>% mean()
+df$match %>% mean()
+
+
+
+ag_tbl <- inner_join(
+	select(dh_data, observation, match),
+	select(df, observation, match), 
+	by = "observation")
+
+(ag_tbl$match.x == ag_tbl$match.y) %>% mean()
+
+vcd::Kappa(table(ag_tbl$match.x, ag_tbl$match.y))
+
+# 
+# df %>% 
+# 	group_by(EthnicGroups_EthnicGroup1Desc) %>% 
+# 	summarize(
+# 		p25_n = quantile(n, .25), 
+# 		p50_n = quantile(n, .5), 
+# 		p75_n = quantile(n, .75), 
+# 						)

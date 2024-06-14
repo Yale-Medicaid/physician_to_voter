@@ -13,15 +13,6 @@ dollar_to_float <- function(x){
 #' @return a list of cleaned, standardized parquet files
 #'
 process_voter_data <- function(raw_l2_files) {
-	# Delete old files, to safeguard against using old data
-	# unlink(
-	# 	c(
-	# 		list.dirs(path = "data/processed_voter_data/")
-	# 	),
-	# 	recursive=T
-	# )
-
-
 	output_folder_names <- gsub(".*Uniform--(.*).tab","data/processed_voter_data/\\1",raw_l2_files)
 	walk(output_folder_names, dir.create, showWarnings=F, recursive=T)
 
