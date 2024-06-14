@@ -1,2 +1,3 @@
 _targets/
-data/
+data/*
+!data/*.dvc
