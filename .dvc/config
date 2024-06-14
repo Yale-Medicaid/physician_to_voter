@@ -1,4 +1,4 @@
 [core]
     remote = remote
 ['remote "remote"']
-    url = ../:/d/Groups/YSPH-HPM-Ndumele/Networks/Beniamino/DVC_stores/physican_to_voter
+    url = D:\Groups\YSPH-HPM-Ndumele\Networks\Beniamino\DVC_stores\physician_to_voter
