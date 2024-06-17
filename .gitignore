@@ -1,3 +1,4 @@
 _targets/
 data/*
 !data/*.dvc
+.Rproj.user

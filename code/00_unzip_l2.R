@@ -1,5 +1,7 @@
 library(tidyverse)
 
+## If you are running this on the server, you can also use DVC to skip this step
+
 # Take zip files from B drive. This won't work if you haven't been given access
 # by Yale, and you must mount the drive in the right place
 zip_files <- list.files("B:/ARCHIVE--SFTP--OLD VM2Uniform Format Files", pattern="*.zip", full.names = T)

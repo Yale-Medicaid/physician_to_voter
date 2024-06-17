@@ -1,0 +1,6 @@
+data/
+docs/
+figures/
+venv/
+.github/
+_targets/
