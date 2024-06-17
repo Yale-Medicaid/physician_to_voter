@@ -1,4 +1,4 @@
-# Physician to Voter Linkage Documentation
+# Physician to Voter Documentation
 
 Welcome to our repository for the physician-to-voter linkage and subsequent
 analyses.

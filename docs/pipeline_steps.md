@@ -1,7 +1,7 @@
 # Pipeline Steps
 
 This page gives a brief explanation for the major steps in the pipeline. Last
-updated 03/06/24.
+updated 17/06/24.
 
 
 ## Build-System Tasks
@@ -51,12 +51,21 @@ the original dataframe with this vector of predictions added as a column named
 
 ### `code/00_unzip_l2.R`
 
-This is a standalone script, and is not intergated into the build system. It is
+!!! Note inline end
+
+    If you don't have access to the Network drive that houses the voter
+    data, you will not be able to run this script. Instead, you can use [Data
+    Version Control](https://dvc.org/) to pull a cached version of the files.
+    To do this, simply install dvc using pip + the included `requirements.txt`
+    file and run `dvc pull` from within the repository.
+
+This is a standalone script, and is not integrated into the build system. It is
 responsible for unzipping the raw l2 files, which are kept on a network drive,
 and copying them over to the `data/` folder. If you are running the
 code somewhere other than the server, you are responsible for
 pointing this code to the correct location of the L2 datasets so
 they can be ingested for this pipeline.
+
 
 ### `code/make_training_data.R`
 
