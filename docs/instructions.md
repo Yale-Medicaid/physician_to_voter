@@ -38,7 +38,8 @@ This step is easy! Simply run:
 dvc pull
 ```
 
-This pulls copies of the voter files and physician files from a secure backup on the server.
+This pulls copies of the voter files and physician files from a secure backup
+folder. This code will only work on the server.
 
 ## Step 4: Run the pipeline
 
