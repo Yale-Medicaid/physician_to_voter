@@ -1,3 +1,5 @@
 site_name: Physician to Voter Documentation
 theme:
   name: material
+markdown_extensions:
+  - admonition
